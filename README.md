@@ -1,6 +1,6 @@
 # NodeJS / ExpressJS MongoDB(Mongoose) Boilerplate
 
-This is my boilerplate for RESTFUL API with NodeJS and MongoDB.
+This is my boilerplate for RESTful API with NodeJS and MongoDB.
 
 ## Boilerplate Features
 * Authentication with JWT (Reset Password with email)
