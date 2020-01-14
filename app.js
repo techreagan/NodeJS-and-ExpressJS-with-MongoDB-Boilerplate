@@ -4,11 +4,15 @@ const colors = require('colors')
 const morgan = require('morgan')
 const cookieParser = require('cookie-parser')
 
+const errorHandler = require('./middleware/error')
+
 const DBConnection = require('./config/db')
 
 dotenv.config({ path: './config/.env' })
 
 DBConnection()
+
+const authRoutes = require('./routes/auth')
 
 const app = express()
 
@@ -20,9 +24,11 @@ if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'))
 }
 
-app.use('/', (req, res) => {
-  res.send('hello world')
-})
+const versionOne = routeName => `/api/v1/${routeName}`
+
+app.use(versionOne('auth'), authRoutes)
+
+app.use(errorHandler)
 
 const PORT = process.env.PORT
 

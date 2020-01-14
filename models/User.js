@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
 const bcrypt = require('bcryptjs')
+const jwt = require('jsonwebtoken')
 
 const Schema = mongoose.Schema
 
@@ -16,7 +17,11 @@ const UserSchema = new Schema(
       match: [
         /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
         'Please add a valid email'
-      ]
+      ],
+      validate: {
+        validator: () => Promise.resolve(false),
+        message: 'Email validation failed'
+      }
     },
     role: {
       type: String,
@@ -26,7 +31,7 @@ const UserSchema = new Schema(
     password: {
       type: String,
       required: [true, 'Please add a password'],
-      minlength: 6,
+      minlength: [6, 'Must be six characters long'],
       select: false
     },
     resetPasswordToken: String,
@@ -52,7 +57,9 @@ UserSchema.methods.matchPassword = async function(enteredPassword) {
 }
 
 UserSchema.methods.getSignedJwtToken = function() {
-  return jwt.sign({ id: this._id })
+  return jwt.sign({ id: this._id }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRE
+  })
 }
 
 module.exports = mongoose.model('User', UserSchema)
