@@ -18,11 +18,7 @@ const UserSchema = new Schema(
       match: [
         /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
         'Please add a valid email'
-      ],
-      validate: {
-        validator: () => Promise.resolve(false),
-        message: 'Email validation failed'
-      }
+      ]
     },
     role: {
       type: String,
@@ -68,7 +64,10 @@ UserSchema.methods.getResetPasswordToken = function() {
   const resetToken = crypto.randomBytes(20).toString('hex')
 
   // Hash token and set to resetPasswordToken field
-  this.resetPasswordToken = crypto.createHash('sha256').update(resetToken).digest('hext')
+  this.resetPasswordToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex')
 
   // Set expire
   this.resetPasswordExpire = Date.now() + 10 * 60 * 1000
