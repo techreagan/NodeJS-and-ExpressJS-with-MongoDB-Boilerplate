@@ -9,10 +9,9 @@ const User = require('../models/User')
 // @route   POST /api/v1/auth/register
 // @access  Public
 exports.register = asyncHandler(async (req, res, next) => {
-  const { name, email, password, role } = req.body
+  let { name, email, password, role } = req.body
 
-  let user = await User.findOne({ email })
-  if (user) return next(new ErrorResponse('Email already exists', 401))
+  email = email.toLowerCase()
 
   user = await User.create({
     name,
@@ -28,11 +27,13 @@ exports.register = asyncHandler(async (req, res, next) => {
 // @route   POST /api/v1/auth/login
 // @access  Public
 exports.login = asyncHandler(async (req, res, next) => {
-  const { email, password } = req.body
+  let { email, password } = req.body
 
   if (!email || !password) {
     return next(new ErrorResponse('Please provide an email and password', 400))
   }
+
+  email = email.toLowerCase()
 
   const user = await User.findOne({ email }).select('+password')
 
@@ -76,11 +77,12 @@ exports.getMe = asyncHandler(async (req, res, next) => {
 exports.updateDetails = asyncHandler(async (req, res, next) => {
   const fieldsToUpdate = {
     name: req.body.name,
-    email: req.body.email
+    email: req.body.email.toLowerCase()
   }
   const user = await User.findByIdAndUpdate(req.user.id, fieldsToUpdate, {
     new: true,
-    runValidators: true
+    runValidators: true,
+    context: 'query'
   })
 
   res.status(200).json({ success: true, data: user })
@@ -93,7 +95,7 @@ exports.updatePassword = asyncHandler(async (req, res, next) => {
   const user = await User.findById(req.user.id).select('+password')
 
   if (!(await user.matchPassword(req.body.currentPassword))) {
-    return next(new ErrorReponse('Password is incorrect', 401))
+    return next(new ErrorResponse('Password is incorrect', 401))
   }
 
   user.password = req.body.newPassword
@@ -106,7 +108,7 @@ exports.updatePassword = asyncHandler(async (req, res, next) => {
 // @route   POST /api/v1/auth/forgotpassword
 // @access  Public
 exports.forgotPassword = asyncHandler(async (req, res, next) => {
-  const user = await User.findOne({ email: req.body.email })
+  const user = await User.findOne({ email: req.body.email.toLowerCase() })
 
   if (!user) {
     return next(new ErrorResponse('There is no user with that email', 404))

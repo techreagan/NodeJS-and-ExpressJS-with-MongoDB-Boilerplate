@@ -3,6 +3,8 @@ const mongoose = require('mongoose')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 
+const uniqueValidator = require('mongoose-unique-validator')
+
 const Schema = mongoose.Schema
 
 const UserSchema = new Schema(
@@ -15,6 +17,7 @@ const UserSchema = new Schema(
       type: String,
       required: [true, 'Please add an email'],
       unique: true,
+      uniqueCaseInsensitive: true,
       match: [
         /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
         'Please add a valid email'
@@ -38,6 +41,8 @@ const UserSchema = new Schema(
     timestamps: true
   }
 )
+
+UserSchema.plugin(uniqueValidator, { message: '{PATH} already exists.' })
 
 // Ecrypt Password
 UserSchema.pre('save', async function(next) {
