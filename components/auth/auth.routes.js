@@ -14,7 +14,7 @@ const {
 	sendEmailVerification,
 } = require('./auth.controller')
 
-const { protect } = require('../../middleware/auth')
+const { protect } = require('../auth/auth.middleware')
 
 router.post('/register', register)
 router.post('/login', login)
