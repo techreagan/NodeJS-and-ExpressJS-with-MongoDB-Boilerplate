@@ -1,27 +1,43 @@
+const { resolve, dirname } = require('path')
+
 const nodemailer = require('nodemailer')
+const Email = require('email-templates')
 
-const sendEmail = async options => {
-  // create reusable transporter object using the default SMTP transport
-  const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: process.env.SMTP_PORT,
-    auth: {
-      user: process.env.SMTP_EMAIL,
-      pass: process.env.SMTP_PASSWORD
-    }
-  })
+const sendEmail = async ({ email, locals, template }) => {
+	console.log('sendemail', email)
+	const emailObj = new Email({
+		message: {
+			from: { name: process.env.FROM_NAME, address: process.env.FROM_EMAIL },
+		},
+		// uncomment below to send emails in development/test env:
+		send: true,
+		transport: nodemailer.createTransport({
+			host: process.env.SMTP_HOST,
+			port: process.env.SMTP_PORT,
+			auth: {
+				user: process.env.SMTP_EMAIL,
+				pass: process.env.SMTP_PASSWORD,
+			},
+		}),
+		views: {
+			root: resolve(dirname(__dirname) + '/emails/'),
+			options: {
+				extension: 'njk',
+			},
+		},
+		// preview: false,
+	})
 
-  // send mail with defined transport object
-  const message = {
-    from: `${process.env.FROM_NAME} <${process.env.FROM_EMAIL}>`, // sender address
-    to: options.email, // list of receivers
-    subject: options.subject, // Subject line
-    text: options.message // plain text body
-  }
-
-  const info = await transporter.sendMail(message)
-
-  console.log('Message sent: %s', info.messageId)
+	const mail = await emailObj.send({
+		template,
+		message: {
+			to: email,
+		},
+		locals: {
+			...locals,
+		},
+	})
+	console.log('Message sent: %s', mail.messageId)
 }
 
 module.exports = sendEmail
