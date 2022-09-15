@@ -34,6 +34,12 @@ const UserSchema = new Schema(
 			minlength: [6, 'Must be six characters long'],
 			select: false,
 		},
+		isEmailVerified: {
+			type: Boolean,
+			default: false,
+		},
+		emailVerificationToken: String,
+		emailVerificationExpire: Date,
 		resetPasswordToken: String,
 		resetPasswordExpire: Date,
 	},
@@ -64,6 +70,20 @@ UserSchema.methods.getSignedJwtToken = function () {
 	})
 }
 
+UserSchema.methods.getEmailVerificationToken = function () {
+	const resetToken = crypto.randomBytes(20).toString('hex')
+
+	this.emailVerificationToken = crypto
+		.createHash('sha256')
+		.update(resetToken)
+		.digest('hex')
+
+	this.emailVerificationExpire =
+		Date.now() + 60 * 1000 * process.env.EMAIL_VERIFICATION_EXPIRATION_TIME
+
+	return resetToken
+}
+
 UserSchema.methods.getResetPasswordToken = function () {
 	// Generate token
 	const resetToken = crypto.randomBytes(20).toString('hex')
@@ -75,7 +95,8 @@ UserSchema.methods.getResetPasswordToken = function () {
 		.digest('hex')
 
 	// Set expire
-	this.resetPasswordExpire = Date.now() + 10 * 60 * 1000
+	this.resetPasswordExpire =
+		Date.now() + 60 * 1000 * process.env.RESET_PASSWORD_EXPIRATION_TIME
 
 	return resetToken
 }
