@@ -6,45 +6,43 @@ const dotenv = require('dotenv')
 // Load env vars
 dotenv.config({ path: './config/.env' })
 
-const User = require('./models/User')
+const User = require('./components/users/user.model')
 
 mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useCreateIndex: true,
-  useFindAndModify: false,
-  useUnifiedTopology: true
+	useNewUrlParser: true,
+	useUnifiedTopology: true,
 })
 
 const users = JSON.parse(
-  fs.readFileSync(`${__dirname}/_data/users.json`, 'utf-8')
+	fs.readFileSync(`${__dirname}/_data/users.json`, 'utf-8')
 )
 
 const importData = async () => {
-  try {
-    await User.create(users)
+	try {
+		await User.create(users)
 
-    console.log('Data Imported...'.green.inverse)
-    process.exit()
-  } catch (err) {
-    console.error(err)
-  }
+		console.log('Data Imported...'.green.inverse)
+		process.exit()
+	} catch (err) {
+		console.error(err)
+	}
 }
 
 const deleteData = async () => {
-  try {
-    await User.deleteMany()
+	try {
+		await User.deleteMany()
 
-    console.log('Data Destroyed...'.red.inverse)
-    process.exit()
-  } catch (err) {
-    console.error(err)
-  }
+		console.log('Data Destroyed...'.red.inverse)
+		process.exit()
+	} catch (err) {
+		console.error(err)
+	}
 }
 
 if (process.argv[2] === '-i') {
-  // node seeder -i
-  importData()
+	// node seeder -i
+	importData()
 } else if (process.argv[2] === '-d') {
-  // node seeder -d
-  deleteData()
+	// node seeder -d
+	deleteData()
 }
