@@ -10,6 +10,8 @@ const {
 	resetPassword,
 	updateDetails,
 	updatePassword,
+	emailVerification,
+	sendEmailVerification,
 } = require('./auth.controller')
 
 const { protect } = require('../../middleware/auth')
@@ -22,5 +24,7 @@ router.put('/updatedetails', protect, updateDetails)
 router.put('/updatepassword', protect, updatePassword)
 router.post('/forgotpassword', forgotPassword)
 router.put('/resetpassword/:resettoken', resetPassword)
+router.put('/emailverification/:resettoken', emailVerification)
+router.post('/sendemailverification', sendEmailVerification)
 
 module.exports = router
