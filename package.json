@@ -4,7 +4,8 @@
 	"description": "",
 	"main": "app.js",
 	"scripts": {
-		"dev": "nodemon app"
+		"start": "node ./bin/www",
+		"dev": "nodemon ./bin/www"
 	},
 	"keywords": [],
 	"author": "",
@@ -14,6 +15,7 @@
 		"colors": "^1.4.0",
 		"cookie-parser": "^1.4.6",
 		"cors": "^2.8.5",
+		"debug": "^4.3.4",
 		"dotenv": "^16.0.2",
 		"express": "^4.18.1",
 		"express-mongo-sanitize": "^2.2.0",
@@ -26,5 +28,8 @@
 		"morgan": "^1.10.0",
 		"nodemailer": "^6.7.8",
 		"xss-clean": "^0.1.1"
+	},
+	"devDependencies": {
+		"nodemon": "^2.0.19"
 	}
 }
