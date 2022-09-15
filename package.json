@@ -17,6 +17,7 @@
 		"cors": "^2.8.5",
 		"debug": "^4.3.4",
 		"dotenv": "^16.0.2",
+		"email-templates": "^10.0.1",
 		"express": "^4.18.1",
 		"express-mongo-sanitize": "^2.2.0",
 		"express-rate-limit": "^6.6.0",
@@ -27,6 +28,7 @@
 		"mongoose-unique-validator": "^3.1.0",
 		"morgan": "^1.10.0",
 		"nodemailer": "^6.7.8",
+		"nunjucks": "^3.2.3",
 		"xss-clean": "^0.1.1"
 	},
 	"devDependencies": {
