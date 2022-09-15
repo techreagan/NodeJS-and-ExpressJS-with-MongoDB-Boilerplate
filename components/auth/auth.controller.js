@@ -2,6 +2,7 @@ const crypto = require('crypto')
 const asyncHandler = require('../../middleware/async')
 const ErrorResponse = require('../../utils/errorResponse')
 const sendEmail = require('../../utils/sendEmail')
+const sendEmailVerification = require('../../utils/sendEmailVerification')
 
 const User = require('../users/user.model')
 
@@ -19,6 +20,8 @@ exports.register = asyncHandler(async (req, res, next) => {
 		password,
 		role,
 	})
+
+	sendEmailVerification(user, req)
 
 	sendTokenResponse(user, 200, res)
 })
@@ -172,6 +175,66 @@ exports.resetPassword = asyncHandler(async (req, res, next) => {
 	await user.save()
 
 	sendTokenResponse(user, 200, res)
+})
+
+// @desc    Email verification
+// @route   PUT /api/v1/auth/emailverification/:resettoken
+// @access  Public
+exports.emailVerification = asyncHandler(async (req, res, next) => {
+	// Get hashed token
+	const emailVerificationToken = crypto
+		.createHash('sha256')
+		.update(req.params.resettoken)
+		.digest('hex')
+
+	console.log(emailVerificationToken)
+
+	const user = await User.findOne({
+		emailVerificationToken,
+		emailVerificationExpire: { $gt: Date.now() },
+	})
+
+	if (!user) {
+		return next(new ErrorResponse('Email verification link has expired', 400))
+	}
+
+	user.isEmailVerified = true
+	user.emailVerificationToken = undefined
+	user.emailVerificationExpire = undefined
+	await user.save()
+
+	res.status(200).json({ success: true, data: user })
+})
+
+// @desc    Send Email Verification
+// @route   POST /api/v1/auth/sendemailverification
+// @access  Public
+exports.sendEmailVerification = asyncHandler(async (req, res, next) => {
+	if (!req.body.email) {
+		return next(new ErrorResponse('Email is required', 400))
+	}
+
+	const user = await User.findOne({
+		email: req.body.email,
+		isEmailVerified: false,
+	})
+
+	if (!user) {
+		return next(
+			new ErrorResponse(
+				'User already verified or No user with that email address',
+				400
+			)
+		)
+	}
+
+	const isSent = sendEmailVerification(user, req)
+	isSent.then((data) => {
+		if (!data) {
+			return next(new ErrorResponse('Email could not be sent', 500))
+		}
+		return res.status(200).json({ success: true, data: 'Email sent' })
+	})
 })
 
 // Get token from model, create cookie and send response
