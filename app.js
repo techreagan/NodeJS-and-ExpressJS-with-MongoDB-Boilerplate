@@ -18,9 +18,6 @@ dotenv.config({ path: './config/.env' })
 
 DBConnection()
 
-const authRoutes = require('./routes/auth')
-const userRoutes = require('./routes/users')
-
 const app = express()
 
 app.use(express.json())
@@ -28,7 +25,7 @@ app.use(express.json())
 app.use(cookieParser())
 
 if (process.env.NODE_ENV === 'development') {
-  app.use(morgan('dev'))
+	app.use(morgan('dev'))
 }
 
 // Sanitize data
@@ -45,8 +42,8 @@ app.use(cors())
 
 // Rate limiting
 const limiter = rateLimit({
-  windowMs: 10 * 60 * 1000, // 10 mins
-  max: 100 // 100 request per 10 mins
+	windowMs: 10 * 60 * 1000, // 10 mins
+	max: 100, // 100 request per 10 mins
 })
 
 app.use(limiter)
@@ -54,24 +51,10 @@ app.use(limiter)
 // Prevent http param pollution
 app.use(hpp())
 
-const versionOne = routeName => `/api/v1/${routeName}`
-
-app.use(versionOne('auth'), authRoutes)
-app.use(versionOne('users'), userRoutes)
+require('./routes')(app)
 
 app.use(errorHandler)
 
-const PORT = process.env.PORT
+app.use(errorHandler)
 
-const server = app.listen(PORT, () => {
-  console.log(
-    `We are live on ${process.env.NODE_ENV} mode on port ${PORT}`.yellow.bold
-  )
-})
-
-// Handle unhandled promise rejections
-process.on('unhandledRejection', (err, promise) => {
-  console.log(`Error: ${err.message}`.red)
-  // Close server & exit process
-  server.close(() => process.exit(1))
-})
+module.exports = app
