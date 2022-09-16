@@ -2,6 +2,14 @@
 
 This is my boilerplate for RESTful API with NodeJS and MongoDB.
 
+## Boilerplate Branchers
+
+Switch between branches to get the version you need
+
+- master branch - advance typescript version that uses decorators for the boilerplate
+- typescript branch - typescript version of the boilerplate
+- vanilla_js branch - vanilla javascript boilerplate
+
 ## Boilerplate Features
 
 - Authentication with JWT
