@@ -5,7 +5,7 @@ import ErrorResponse from '../../utils/errorResponse'
 import User from '../users/user.model'
 
 export const protect = asyncHandler(
-	async (req: Request, res: Response, next: NextFunction) => {
+	async (req: Request, _: Response, next: NextFunction) => {
 		let token
 
 		if (
@@ -25,9 +25,9 @@ export const protect = asyncHandler(
 
 		try {
 			// Verify token
-			const decoded = jwt.verify(token, process.env.JWT_SECRET)
+			const decoded = jwt.verify(token, process.env.JWT_SECRET!)
 
-			req.user = await User.findById(decoded.id)
+			req.user = (await User.findById((decoded as { id: string }).id)) as any
 			next()
 		} catch (err) {
 			return next(new ErrorResponse('Not authorized to access this route', 401))
@@ -36,8 +36,8 @@ export const protect = asyncHandler(
 )
 
 // Grant access to specific roles
-export const authorize = (...roles) => {
-	return (req: Request, res: Response, next: NextFunction) => {
+export const authorize = (...roles: string[]) => {
+	return (req: Request, _: Response, next: NextFunction) => {
 		if (!roles.includes(req.user.role)) {
 			return next(
 				new ErrorResponse(

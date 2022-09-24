@@ -1,7 +1,7 @@
-const express = require('express')
+import express from 'express'
 const router = express.Router()
 
-const {
+import {
 	register,
 	login,
 	logout,
@@ -11,10 +11,10 @@ const {
 	updateDetails,
 	updatePassword,
 	emailVerification,
-	sendEmailVerification,
-} = require('./auth.controller')
+	postSendEmailVerification,
+} from './auth.controller'
 
-const { protect } = require('../auth/auth.middleware')
+import { protect } from '../auth/auth.middleware'
 
 router.post('/register', register)
 router.post('/login', login)
@@ -25,6 +25,6 @@ router.put('/updatepassword', protect, updatePassword)
 router.post('/forgotpassword', forgotPassword)
 router.put('/resetpassword/:resettoken', resetPassword)
 router.put('/emailverification/:resettoken', emailVerification)
-router.post('/sendemailverification', sendEmailVerification)
+router.post('/sendemailverification', postSendEmailVerification)
 
-module.exports = router
+export default router
