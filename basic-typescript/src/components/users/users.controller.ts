@@ -1,8 +1,8 @@
 import { NextFunction, Request, Response } from 'express'
 
-const asyncHandler = require('../../middleware/async')
-const ErrorResponse = require('../../utils/errorResponse')
-const User = require('./user.model')
+import asyncHandler from '../../middleware/async'
+import ErrorResponse from '../../utils/errorResponse'
+import User from './user.model'
 
 // @desc    Get all users
 // @route   GET /api/v1/auth/users

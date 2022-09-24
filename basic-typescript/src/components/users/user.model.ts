@@ -5,28 +5,26 @@ import jwt from 'jsonwebtoken'
 
 import uniqueValidator from 'mongoose-unique-validator'
 
-export interface IUser {
-	name: string
-	email: string
-	role?: string
-	password: string
-	isEmailVerified: boolean
-	emailVerificationToken: string
-	emailVerificationExpire: Date
-	resetPasswordToken: string
-	resetPasswordExpire: Date
-}
-
-// Put all user instance methods in this interface:
-interface IUserMethods {
+export interface IUserMethods {
 	matchPassword(password: string): Promise<boolean>
 	getSignedJwtToken(): string
 	getEmailVerificationToken(): string
 	getResetPasswordToken(): string
 }
 
-// Create a new Model type that knows about IUserMethods...
-type UserModel = Model<IUser, {}, IUserMethods>
+export interface IUser extends IUserMethods {
+	name: string
+	email: string
+	role?: string
+	password: string
+	isEmailVerified: boolean
+	emailVerificationToken: string | undefined
+	emailVerificationExpire: Date | undefined
+	resetPasswordToken: string | undefined
+	resetPasswordExpire: Date | undefined
+}
+
+export type UserModel = Model<IUser, {}, IUserMethods>
 
 const UserSchema = new Schema<IUser, UserModel, IUserMethods>(
 	{
@@ -86,7 +84,7 @@ UserSchema.methods.matchPassword = async function (enteredPassword: string) {
 }
 
 UserSchema.methods.getSignedJwtToken = function () {
-	return jwt.sign({ id: this._id }, process.env.JWT_SECRET, {
+	return jwt.sign({ id: this._id }, process.env.JWT_SECRET!, {
 		expiresIn: process.env.JWT_EXPIRE,
 	})
 }
@@ -99,8 +97,10 @@ UserSchema.methods.getEmailVerificationToken = function () {
 		.update(resetToken)
 		.digest('hex')
 
+	// const expirationTime: number =
+
 	this.emailVerificationExpire =
-		Date.now() + 60 * 1000 * process.env.EMAIL_VERIFICATION_EXPIRATION_TIME
+		Date.now() + 60 * 1000 * +process.env.EMAIL_VERIFICATION_EXPIRATION_TIME!
 
 	return resetToken
 }
@@ -117,7 +117,7 @@ UserSchema.methods.getResetPasswordToken = function () {
 
 	// Set expire
 	this.resetPasswordExpire =
-		Date.now() + 60 * 1000 * process.env.RESET_PASSWORD_EXPIRATION_TIME
+		Date.now() + 60 * 1000 * +process.env.RESET_PASSWORD_EXPIRATION_TIME!
 
 	return resetToken
 }
