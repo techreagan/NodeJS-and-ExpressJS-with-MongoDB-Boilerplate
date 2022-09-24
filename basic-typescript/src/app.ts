@@ -51,7 +51,9 @@ app.use(limiter)
 // Prevent http param pollution
 app.use(hpp())
 
-require('./routes')(app)
+import routes from './routes'
+
+routes(app)
 
 app.use(errorHandler)
 
