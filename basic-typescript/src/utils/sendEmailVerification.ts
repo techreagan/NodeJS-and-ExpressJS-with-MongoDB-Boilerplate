@@ -1,10 +1,13 @@
-const sendEmail = require('./sendEmail')
-// const errorResponse = require('./errorResponse')
+import { Request } from 'express'
 
-async function sendEmailVerification(user, req) {
+import { IUser } from '../components/users/user.model'
+
+import sendEmail from './sendEmail'
+
+export default async function sendEmailVerification(user: IUser, req: Request) {
 	const resetToken = user.getEmailVerificationToken()
 
-	await user.save({ validateBeforeSave: false })
+	await (user as any).save({ validateBeforeSave: false })
 
 	try {
 		await sendEmail({
@@ -26,10 +29,8 @@ async function sendEmailVerification(user, req) {
 		user.emailVerificationToken = undefined
 		user.emailVerificationExpire = undefined
 
-		await user.save({ validateBeforeSave: false })
+		await (user as any).save({ validateBeforeSave: false })
 		return false
 		// return next(new ErrorResponse('Email could not be sent', 500))
 	}
 }
-
-module.exports = sendEmailVerification
