@@ -1,5 +1,5 @@
 import express from 'express'
-import dotenv from 'dotenv'
+import * as dotenv from 'dotenv'
 import 'colors'
 import morgan from 'morgan'
 import cookieParser from 'cookie-parser'
@@ -12,11 +12,7 @@ import cors from 'cors'
 
 import errorHandler from './middleware/error'
 
-dotenv.config({ path: './config/.env' })
-
-import { process } from './types/environment.dt'
-
-console.log(process.env.hello)
+dotenv.config()
 
 import DBConnection from './config/db'
 
@@ -61,4 +57,4 @@ app.use(errorHandler)
 
 app.use(errorHandler)
 
-module.exports = app
+export default app
