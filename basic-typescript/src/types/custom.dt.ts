@@ -1,5 +1,13 @@
 declare namespace Express {
 	export interface Request {
-		user?: object
+		user: {
+			[key: string]: string
+		}
+	}
+}
+
+declare namespace Express {
+	export interface Response {
+		advancedResults?: {}
 	}
 }
