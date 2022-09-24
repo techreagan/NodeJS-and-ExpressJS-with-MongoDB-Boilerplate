@@ -10,15 +10,16 @@ export default async (data: {
 }) => {
 	const { email, locals, template } = data
 	console.log('sendemail', email)
+
 	const emailObj = new Email({
 		message: {
-			from: { name: process.env.FROM_NAME, address: process.env.FROM_EMAIL },
+			from: { name: process.env.FROM_NAME!, address: process.env.FROM_EMAIL! },
 		},
 		// uncomment below to send emails in development/test env:
 		send: true,
 		transport: nodemailer.createTransport({
 			host: process.env.SMTP_HOST,
-			port: process.env.SMTP_PORT,
+			port: +process.env.SMTP_PORT!,
 			auth: {
 				user: process.env.SMTP_EMAIL,
 				pass: process.env.SMTP_PASSWORD,
