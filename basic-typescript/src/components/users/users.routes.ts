@@ -1,4 +1,4 @@
-import express from 'express'
+import { Router } from 'express'
 import {
 	getUsers,
 	getUser,
@@ -9,7 +9,7 @@ import {
 
 import User from './user.model'
 
-const router = express.Router({ mergeParams: true })
+const router = Router({ mergeParams: true })
 
 import advancedResults from '../../middleware/advancedResults'
 import { protect, authorize } from '../auth/auth.middleware'
