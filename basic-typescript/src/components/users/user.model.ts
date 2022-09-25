@@ -24,7 +24,7 @@ export interface IUser extends IUserMethods {
 	resetPasswordExpire: Date | undefined
 }
 
-export type UserModel = Model<IUser, {}, IUserMethods>
+type UserModel = Model<IUser, {}, IUserMethods>
 
 const UserSchema = new Schema<IUser, UserModel, IUserMethods>(
 	{
