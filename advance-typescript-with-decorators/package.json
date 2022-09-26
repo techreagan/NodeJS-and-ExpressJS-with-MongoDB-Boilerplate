@@ -35,6 +35,7 @@
 		"morgan": "^1.10.0",
 		"nodemailer": "^6.7.8",
 		"nunjucks": "^3.2.3",
+		"reflect-metadata": "^0.1.13",
 		"typescript": "^4.8.3",
 		"xss-clean": "^0.1.1"
 	},
