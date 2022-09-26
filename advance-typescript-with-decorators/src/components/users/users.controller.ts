@@ -1,21 +1,33 @@
 import { NextFunction, Request, Response } from 'express'
 
-import asyncHandler from '../../middleware/async'
-import ErrorResponse from '../../utils/errorResponse'
 import User from './user.model'
 
-// @desc    Get all users
-// @route   GET /api/v1/auth/users
-// @access  Private/Admin
-export const getUsers = asyncHandler(async (_: Request, res: Response) => {
-	res.status(200).json(res.advancedResults)
-})
+import { get, controller, post, use, put, del } from '../../decorators'
+import ErrorResponse from '../../utils/errorResponse'
+import advancedResults from '../../middleware/advancedResults'
+import { protect, authorize } from '../auth/auth.middleware'
 
-// @desc    Get single user
-// @route   GET /api/v1/auth/users/:id
-// @access  Private/Admin
-export const getUser = asyncHandler(
-	async (req: Request, res: Response, next: NextFunction) => {
+@controller('/api/v1/users')
+// @ts-ignore
+class UserController {
+	// @desc    Get all users
+	// @route   GET /api/v1/users
+	// @access  Private/Admin
+	@get('/')
+	@use(advancedResults(User))
+	@use(authorize('admin'))
+	@use(protect)
+	async getUsers(_: Request, res: Response) {
+		res.status(200).json(res.advancedResults)
+	}
+
+	// @desc    Get single user
+	// @route   GET /api/v1/users/:id
+	// @access  Private/Admin
+	@get('/:id')
+	@use(authorize('admin'))
+	@use(protect)
+	async getUser(req: Request, res: Response, next: NextFunction) {
 		const user = await User.findById(req.params.id)
 
 		if (!user)
@@ -23,22 +35,26 @@ export const getUser = asyncHandler(
 
 		res.status(200).json({ success: true, data: user })
 	}
-)
 
-// @desc    Create user
-// @route   POST /api/v1/auth/users
-// @access  Private/Admin
-export const createUser = asyncHandler(async (req: Request, res: Response) => {
-	const user = await User.create(req.body)
+	// @desc    Create user
+	// @route   POST /api/v1/users
+	// @access  Private/Admin
+	@post('/')
+	@use(authorize('admin'))
+	@use(protect)
+	async createUser(req: Request, res: Response) {
+		const user = await User.create(req.body)
 
-	res.status(201).json({ success: true, data: user })
-})
+		res.status(201).json({ success: true, data: user })
+	}
 
-// @desc    Update user
-// @route   PUT /api/v1/auth/users/:id
-// @access  Private/Admin
-export const updateUser = asyncHandler(
-	async (req: Request, res: Response, next: NextFunction) => {
+	// @desc    Update user
+	// @route   PUT /api/v1/users/:id
+	// @access  Private/Admin
+	@put('/:id')
+	@use(authorize('admin'))
+	@use(protect)
+	async updateUser(req: Request, res: Response, next: NextFunction) {
 		req.body.password = ''
 		delete req.body.password
 
@@ -52,13 +68,14 @@ export const updateUser = asyncHandler(
 
 		res.status(200).json({ success: true, data: user })
 	}
-)
 
-// @desc    Delete user
-// @route   DELETE /api/v1/auth/users/:id
-// @access  Private/Admin
-export const deleteUser = asyncHandler(
-	async (req: Request, res: Response, next: NextFunction) => {
+	// @desc    Delete user
+	// @route   DELETE /api/v1/users/:id
+	// @access  Private/Admin
+	@del('/:id')
+	@use(authorize('admin'))
+	@use(protect)
+	async deleteUser(req: Request, res: Response, next: NextFunction) {
 		const user = await User.findById(req.params.id)
 
 		if (!user)
@@ -68,4 +85,4 @@ export const deleteUser = asyncHandler(
 
 		res.status(200).json({ success: true, data: {} })
 	}
-)
+}
