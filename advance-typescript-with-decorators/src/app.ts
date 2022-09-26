@@ -11,6 +11,7 @@ import hpp from 'hpp'
 import cors from 'cors'
 
 import errorHandler from './middleware/error'
+import { AppRouter } from './AppRouter'
 
 dotenv.config()
 
@@ -51,11 +52,9 @@ app.use(limiter)
 // Prevent http param pollution
 app.use(hpp())
 
-import routes from './routes'
+import './components/users/users.controller'
 
-routes(app)
-
-app.use(errorHandler)
+app.use(AppRouter.getInstance())
 
 app.use(errorHandler)
 
