@@ -1,37 +1,43 @@
 import crypto from 'crypto'
 import { NextFunction, Request, Response } from 'express'
-import asyncHandler from '../../middleware/async'
+
+import { get, controller, post, use, put } from '../../decorators'
 import ErrorResponse from '../../utils/errorResponse'
 import sendEmail from '../../utils/sendEmail'
 import sendEmailVerification from '../../utils/sendEmailVerification'
 
 import User, { IUser } from '../users/user.model'
+import { protect } from './auth.middleware'
 
-// @desc    Register user
-// @route   POST /api/v1/auth/register
-// @access  Public
-export const register = asyncHandler(async (req: Request, res: Response) => {
-	let { name, email, password, role } = req.body
+@controller('/api/v1/auth')
+// @ts-ignore
+class AuthController {
+	// @desc    Register user
+	// @route   POST /api/v1/auth/register
+	// @access  Public
+	@post('/register')
+	async register(req: Request, res: Response) {
+		let { name, email, password, role } = req.body
 
-	email = email.toLowerCase()
+		email = email.toLowerCase()
 
-	const user = await User.create({
-		name,
-		email,
-		password,
-		role,
-	})
+		const user = await User.create({
+			name,
+			email,
+			password,
+			role,
+		})
 
-	sendEmailVerification(user, req)
+		sendEmailVerification(user, req)
 
-	sendTokenResponse(user, 200, res)
-})
+		sendTokenResponse(user, 200, res)
+	}
 
-// @desc    Login user
-// @route   POST /api/v1/auth/login
-// @access  Public
-export const login = asyncHandler(
-	async (req: Request, res: Response, next: NextFunction) => {
+	// @desc    Login user
+	// @route   POST /api/v1/auth/login
+	// @access  Public
+	@post('/login')
+	async login(req: Request, res: Response, next: NextFunction) {
 		let { email, password } = req.body
 
 		if (!email || !password) {
@@ -56,34 +62,37 @@ export const login = asyncHandler(
 
 		sendTokenResponse(user, 200, res)
 	}
-)
 
-// @desc    Log user out / clear cookie
-// @route   GET /api/v1/auth/logout
-// @access  Private
-export const logout = asyncHandler(async (_: Request, res: Response) => {
-	res.cookie('token', 'none', {
-		expires: new Date(Date.now() + 10 * 1000),
-		httpOnly: true,
-	})
+	// @desc    Log user out / clear cookie
+	// @route   GET /api/v1/auth/logout
+	// @access  Private
+	@get('/logout')
+	async logout(_: Request, res: Response) {
+		res.cookie('token', 'none', {
+			expires: new Date(Date.now() + 10 * 1000),
+			httpOnly: true,
+		})
 
-	res.status(200).json({ success: true, data: {} })
-})
+		res.status(200).json({ success: true, data: {} })
+	}
 
-// @desc    Get current logged in user
-// @route   POST /api/v1/auth/me
-// @access  Private
-export const getMe = asyncHandler(async (req: Request, res: Response) => {
-	const user = req.user
+	// @desc    Get current logged in user
+	// @route   POST /api/v1/auth/me
+	// @access  Private
+	@post('/me')
+	@use(protect)
+	async getMe(req: Request, res: Response) {
+		const user = req.user
 
-	res.status(200).json({ success: true, data: user })
-})
+		res.status(200).json({ success: true, data: user })
+	}
 
-// @desc    Update user details
-// @route   POST /api/v1/auth/updatedetails
-// @access  Private
-export const updateDetails = asyncHandler(
-	async (req: Request, res: Response) => {
+	// @desc    Update user details
+	// @route   POST /api/v1/auth/updatedetails
+	// @access  Private
+	@put('/updatedetails')
+	@use(protect)
+	async updateDetails(req: Request, res: Response) {
 		const fieldsToUpdate = {
 			name: req.body.name,
 			email: req.body.email.toLowerCase(),
@@ -96,13 +105,13 @@ export const updateDetails = asyncHandler(
 
 		res.status(200).json({ success: true, data: user })
 	}
-)
 
-// @desc    Update password
-// @route   PUT /api/v1/auth/updatepassword
-// @access  Private
-export const updatePassword = asyncHandler(
-	async (req: Request, res: Response, next: NextFunction) => {
+	// @desc    Update password
+	// @route   PUT /api/v1/auth/updatepassword
+	// @access  Private
+	@put('/updatepassword')
+	@use(protect)
+	async updatePassword(req: Request, res: Response, next: NextFunction) {
 		const user: any = await User.findById(req.user.id).select('+password')
 
 		if (!(await user.matchPassword(req.body.currentPassword))) {
@@ -114,13 +123,12 @@ export const updatePassword = asyncHandler(
 
 		sendTokenResponse(user, 200, res)
 	}
-)
 
-// @desc    Forgot password
-// @route   POST /api/v1/auth/forgotpassword
-// @access  Public
-export const forgotPassword = asyncHandler(
-	async (req: Request, res: Response, next: NextFunction) => {
+	// @desc    Forgot password
+	// @route   POST /api/v1/auth/forgotpassword
+	// @access  Public
+	@post('/forgotpassword')
+	async forgotPassword(req: Request, res: Response, next: NextFunction) {
 		const user = await User.findOne({ email: req.body.email.toLowerCase() })
 
 		if (!user) {
@@ -156,13 +164,12 @@ export const forgotPassword = asyncHandler(
 			return next(new ErrorResponse('Email could not be sent', 500))
 		}
 	}
-)
 
-// @desc    Reset password
-// @route   PUT /api/v1/auth/resetpassword/:resettoken
-// @access  Public
-export const resetPassword = asyncHandler(
-	async (req: Request, res: Response, next: NextFunction) => {
+	// @desc    Reset password
+	// @route   PUT /api/v1/auth/resetpassword/:resettoken
+	// @access  Public
+	@put('/resetpassword/:resettoken')
+	async resetPassword(req: Request, res: Response, next: NextFunction) {
 		// Get hashed token
 		const resetPasswordToken = crypto
 			.createHash('sha256')
@@ -188,13 +195,12 @@ export const resetPassword = asyncHandler(
 
 		sendTokenResponse(user, 200, res)
 	}
-)
 
-// @desc    Email verification
-// @route   PUT /api/v1/auth/emailverification/:resettoken
-// @access  Public
-export const emailVerification = asyncHandler(
-	async (req: Request, res: Response, next: NextFunction) => {
+	// @desc    Email verification
+	// @route   PUT /api/v1/auth/emailverification/:resettoken
+	// @access  Public
+	@put('/emailverification/:resettoken')
+	async emailVerification(req: Request, res: Response, next: NextFunction) {
 		// Get hashed token
 		const emailVerificationToken = crypto
 			.createHash('sha256')
@@ -219,13 +225,16 @@ export const emailVerification = asyncHandler(
 
 		res.status(200).json({ success: true, data: user })
 	}
-)
 
-// @desc    Send Email Verification
-// @route   POST /api/v1/auth/sendemailverification
-// @access  Public
-export const postSendEmailVerification = asyncHandler(
-	async (req: Request, res: Response, next: NextFunction) => {
+	// @desc    Send Email Verification
+	// @route   POST /api/v1/auth/sendemailverification
+	// @access  Public
+	@post('/sendemailverification')
+	async postSendEmailVerification(
+		req: Request,
+		res: Response,
+		next: NextFunction
+	) {
 		if (!req.body.email) {
 			return next(new ErrorResponse('Email is required', 400))
 		}
@@ -252,7 +261,7 @@ export const postSendEmailVerification = asyncHandler(
 			return res.status(200).json({ success: true, data: 'Email sent' })
 		})
 	}
-)
+}
 
 // Get token from model, create cookie and send response
 const sendTokenResponse = (user: IUser, statusCode: number, res: Response) => {
