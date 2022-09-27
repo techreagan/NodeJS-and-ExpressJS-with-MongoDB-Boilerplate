@@ -53,6 +53,7 @@ app.use(limiter)
 app.use(hpp())
 
 import './components/users/users.controller'
+import './components/auth/auth.controller'
 
 app.use(AppRouter.getInstance())
 
